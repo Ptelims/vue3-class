@@ -5,7 +5,7 @@ import { RouterLink, RouterView } from "vue-router";
 
 <template>
   <main class="container">
-    <img src="banner.jpg" alt="banner" />
+    <img src="https://i.imgur.com/nC0u1rR.png" alt="banner" />
     <header class="header-margin">
       <nav>
         <RouterLink to="/">หน้าแรก</RouterLink>
