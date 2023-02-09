@@ -6,22 +6,26 @@
       <button type="submit">ลงทะเบียน</button>
     </form>
 
-    <article v-if="(x = courseData.find((elem) => elem.course_id == courseID))">
-      <div class="border">
-        <p>
-          <b>รหัสวิชา : </b> <span>{{ x.course_id }}</span>
-        </p>
-        <p>
-          <b>ชื่อวิชา : </b> <span>{{ x.course_name }}</span>
-        </p>
-        <p>
-          <b>หน่วยกิต : </b><span>{{ x.credit }}</span>
-        </p>
-      </div>
-    </article>
-    <article v-else>
-      <p>ไม่พบผลการค้นหา</p>
-    </article>
+    <div v-if="courseID != ''">
+      <article
+        v-if="(x = courseData.find((elem) => elem.course_id == courseID))"
+      >
+        <div class="border">
+          <p>
+            <b>รหัสวิชา : </b> <span>{{ x.course_id }}</span>
+          </p>
+          <p>
+            <b>ชื่อวิชา : </b> <span>{{ x.course_name }}</span>
+          </p>
+          <p>
+            <b>หน่วยกิต : </b><span>{{ x.credit }}</span>
+          </p>
+        </div>
+      </article>
+      <article v-else>
+        <p>ไม่พบผลการค้นหา</p>
+      </article>
+    </div>
 
     <hr />
     <div>
@@ -49,16 +53,15 @@
 import { ref } from "vue";
 import courseData from "../json/cs_courses.json";
 import { useEnrollment } from "../stores/useEnrollment";
-
+import { useBasket } from "../stores/useBasket";
 const enrollment = useEnrollment();
-
 const courseID = ref("");
-let courseInfo = ref([]);
+const courseBasket = useBasket();
+const courseInfo = courseBasket.getState;
 function addToBasket() {
   const data = courseData.find((elem) => elem.course_id == courseID.value);
-  //console.log(data);
   if (data) {
-    courseInfo.value.push(data);
+    courseBasket.storeState(data);
     courseID.value = "";
   } else {
     alert("โปรดกรอกรหัสวิชาที่ถูกต้อง");
@@ -66,16 +69,17 @@ function addToBasket() {
 }
 function removeFromBasket(course_key) {
   if (confirm("ต้องการลบรายวิชาหรือไม่ ?")) {
-    courseInfo.value.pop(course_key);
+    courseBasket.popState(course_key);
   }
 }
 function enrollCourse() {
-  if (courseInfo.value.length != 0) {
-    courseInfo.value.forEach((subject) => {
+  if (courseInfo.length > 0) {
+    courseInfo.forEach((subject) => {
       enrollment.storeState(subject);
     });
-    console.log(enrollment.getState);
-    courseInfo.value = [];
+    while (courseInfo.length != 0) {
+      courseBasket.popState(0);
+    }
     alert("ลงทะเบียนแล้ว โปรดไปที่หน้า วิชาที่ฉันลงทะเบียน");
   } else {
     alert("โปรดเลือกวิชาก่อนทำการลงทะเบียน");
